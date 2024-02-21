@@ -100,22 +100,25 @@ export default class MessageResolver {
     }
 
     @Mutation(type => String)
-    async markAsRead(@Ctx() { database, userId }: Context, @Arg("messageId") messageId: string): Promise<string> {
-        if (!userId) {
-            throw new Error(`Not authenticated`);
-        }
+    markAsRead(@Ctx() { database, userId }: Context, @Arg("messageId") messageId: string): Promise<string> {
+        return new Promise((resolve, reject) => {
+            if (!userId) {
+                reject(new Error(`Not authenticated`));
+            }
 
-        const filter = { _id: { $eq: messageId } };
-        const update = { unread: false };
+            const filter = { _id: { $eq: messageId } };
+            const update = { unread: false };
 
-        let message = await await database.MessageModel.findOneAndUpdate(filter, update, {
-            new: true,
+            database.MessageModel.findOneAndUpdate(filter, update, { new: true })
+                .then(message => {
+                    if (message) {
+                        resolve(message._id); // Resolve with anything useful here instead of message id.
+                    }
+                    reject(new Error(`Message not found.`));
+                })
+                .catch(error => {
+                    reject(new Error(`Error while updating message: ${error.message}`));
+                });
         });
-
-        if (!message) {
-            throw new Error(`Message not found.`);
-        }
-
-        return message._id; // Return anything useful here instead of message id.
     }
 }

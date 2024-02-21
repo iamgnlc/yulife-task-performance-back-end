@@ -17,6 +17,13 @@ const init = async () => {
     console.log(`DB connected to ${config.database.uri}!`);
     const server = await createGraphqlServer(db);
 
+    // Block above could probably be refactored like this, but not sure about performance gain.
+    // const app = express();
+    // const dbPromise = getDatabase(config.database);
+    // const serverPromise = createGraphqlServer(await dbPromise);
+
+    // const [db, server] = await Promise.all([dbPromise, serverPromise]);
+
     const path = "/graphql";
 
     app.use(
@@ -25,6 +32,10 @@ const init = async () => {
             secret: config.auth.secret,
             credentialsRequired: false,
             algorithms: ["HS256"],
+
+            // Specify audience and issuer increase security.
+            // audience: "http://...",
+            // issuer: "http://...",
         }),
     );
 
@@ -35,9 +46,11 @@ const init = async () => {
 
     server.applyMiddleware({ app, path });
 
-    app.listen(NODE_PORT);
-    console.log(`App listening on port ${NODE_PORT}!`);
-    console.log(`Env: ${process.env.NODE_ENV?.toUpperCase()}`);
+    app.listen(NODE_PORT, () => {
+        // Moving log into a callbadxck ensures that these are printed only after the server has successfully started listening.
+        console.log(`App listening on port ${NODE_PORT}!`);
+        console.log(`Env: ${process.env.NODE_ENV?.toUpperCase()}`);
+    });
 };
 
 init();

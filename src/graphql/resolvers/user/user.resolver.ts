@@ -98,7 +98,7 @@ export default class UserResolver {
     //     return jwt.sign({ userId: user._id }, config.auth.secret, { expiresIn: "1y" });
     // }
 
-    // Alternatively this function could be rerfactored avoiding async/await.
+    // Alternatively function above could be rerfactored avoiding async/await.
     // This type of refactor could be applied somewhere else as well.
     register(@Arg("email") email: string, @Arg("password") password: string, @Ctx() { database }: Context) {
         return database.UserModel.exists({ email })
@@ -112,7 +112,7 @@ export default class UserResolver {
             .then(hash => database.UserModel.create({ email, password: hash }))
             .then(user => jwt.sign({ userId: user._id }, config.auth.secret, { expiresIn: "1y" }))
             .catch(error => {
-                throw error;
+                throw new Error(`Registration failed: ${error.message}`);
             });
     }
 }
