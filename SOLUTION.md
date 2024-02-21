@@ -77,4 +77,4 @@ query me {
 
 - DB seed didn't work.
 - Not familiar with type-graphql library, never used before.
-
+- Not familiar with artillery output.

@@ -57,7 +57,7 @@ export default class UserResolver {
         @Ctx() { database, userId }: Context,
     ): Promise<User["unreadMessageCount"]> {
         // do a count on the DB for messages count
-        const count = await database.MessageModel.countDocuments({ to: userId, unread: true }); // Perform count in DB.
+        const count = await database.MessageModel.countDocuments({ to: userId, unread: true }); // Perform count in DB other than in code.
         return count;
     }
 
@@ -68,17 +68,9 @@ export default class UserResolver {
     async login(@Arg("email") email: string, @Arg("password") password: string, @Ctx() { database }: Context) {
         const record = await database.UserModel.findOne({ email });
 
-        if (!record) {
-            throw new Error(`Incorrect credentials`); // Generic error message to avoid an attacker identify a registered email.
+        if (!record || !(await bcrypt.compare(password, record.password))) {
+            throw new Error(`Incorrect credentials`);
         }
-
-        const correct = await bcrypt.compare(password, record.password);
-
-        if (!correct) {
-            throw new Error(`Invalid credentials`);
-        }
-
-        // Both if conditions can potentially be combined into one.
 
         // Isn't 1 year too long for validity of the JWT?
         return jwt.sign({ userId: record._id }, config.auth.secret, { expiresIn: "1y" });
@@ -112,7 +104,7 @@ export default class UserResolver {
         return database.UserModel.exists({ email })
             .then(existing => {
                 if (existing) {
-                    throw new Error(`User exists!`); // This error could be replaced with a more generic one to avoid telling a possible attacker email exists in DB.
+                    throw new Error(`User exists!`); // This error message could be replaced with a more generic one to avoid telling a possible attacker email exists in DB.
                 }
                 return bcrypt.genSalt(10);
             })

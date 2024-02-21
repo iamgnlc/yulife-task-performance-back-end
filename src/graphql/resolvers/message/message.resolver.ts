@@ -116,6 +116,6 @@ export default class MessageResolver {
             throw new Error(`Message not found.`);
         }
 
-        return message._id;
+        return message._id; // Return anything useful here instead of message id.
     }
 }
