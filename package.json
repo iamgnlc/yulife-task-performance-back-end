@@ -4,9 +4,9 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "develop": "concurrently 'yarn tsc -w' 'yarn nodemon build/init.js'",
+    "develop": "NODE_ENV=development concurrently 'yarn tsc -w' 'yarn nodemon src/init.ts'",
     "build": "tsc",
-    "start": "pm2 start pm2.json --no-daemon",
+    "start": "NODE_ENV=production pm2 start pm2.json --no-daemon",
     "artillery:run": "artillery run ./artillery/main.yml",
     "migrate:status": "migrate-mongo status",
     "migrate:up": "migrate-mongo up",
@@ -15,21 +15,16 @@
     "services:dev:stop": "docker-compose -f docker-compose.yml stop"
   },
   "dependencies": {
-    "@typegoose/typegoose": "^7.6.0",
-    "@types/bcrypt": "^3.0.0",
-    "@types/express": "^4.17.11",
-    "@types/express-jwt": "^6.0.1",
-    "@types/jsonwebtoken": "^8.5.0",
-    "@types/mongoose": "^5.10.3",
-    "@types/node": "^14.14.34",
     "apollo-server-express": "^2.21.1",
     "artillery": "^1.6.1",
     "bcrypt": "^5.0.1",
     "class-validator": "^0.13.1",
     "concurrently": "^6.0.0",
+    "dotenv": "^16.4.5",
     "express": "^4.17.1",
     "express-jwt": "^6.0.0",
     "graphql": "^15.5.0",
+    "graphql-depth-limit": "^1.1.0",
     "graphql-playground-middleware-express": "^1.7.22",
     "jsonwebtoken": "^8.5.1",
     "migrate-mongo": "^8.2.2",
@@ -46,5 +41,15 @@
     "tabWidth": 4,
     "trailingComma": "all",
     "arrowParens": "avoid"
+  },
+  "devDependencies": {
+    "@types/graphql-depth-limit": "^1.1.6",
+    "@typegoose/typegoose": "^7.6.0",
+    "@types/bcrypt": "^3.0.0",
+    "@types/express": "^4.17.11",
+    "@types/express-jwt": "^6.0.1",
+    "@types/jsonwebtoken": "^8.5.0",
+    "@types/mongoose": "^5.10.3",
+    "@types/node": "^14.14.34"
   }
 }

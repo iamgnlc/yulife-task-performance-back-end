@@ -8,9 +8,11 @@ class Context {
     constructor(public database: Database, expressContext: ExpressContext) {
         const user = (expressContext.req as any).user as Creds;
 
-        if (user) {
+        if (user && user.userId) {
             this.userId = user.userId;
             this.isAuthenticated = true;
+        } else {
+            this.isAuthenticated = false; // Implicitly set to false if condition is not met.
         }
     }
 }
