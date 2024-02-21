@@ -5,6 +5,11 @@ import express from "express";
 import getDatabase from "./database";
 import createGraphqlServer from "./graphql";
 import config from "./config";
+import { isEnv } from "./utils/isEnv";
+
+import "./utils/dotenv";
+
+const NODE_PORT = process.env.NODE_PORT || 3000;
 
 const init = async () => {
     const app = express();
@@ -23,13 +28,16 @@ const init = async () => {
         }),
     );
 
-    // for debugging
-    app.get("/playground", expressPlayground({ endpoint: "/graphql" }));
+    // for debugging (enable playground only in dev)
+    if (isEnv("development")) {
+        app.get("/playground", expressPlayground({ endpoint: "/graphql" }));
+    }
 
     server.applyMiddleware({ app, path });
 
-    app.listen(5000);
-    console.log(`App listening on port 5000!`);
+    app.listen(NODE_PORT);
+    console.log(`App listening on port ${NODE_PORT}!`);
+    console.log(`Env: ${process.env.NODE_ENV?.toUpperCase()}`);
 };
 
 init();

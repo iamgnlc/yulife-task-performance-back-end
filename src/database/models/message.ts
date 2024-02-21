@@ -1,4 +1,4 @@
-import { prop, Ref, getModelForClass } from '@typegoose/typegoose';
+import { prop, Ref, getModelForClass } from "@typegoose/typegoose";
 import { User } from "./user";
 
 export class Message {
@@ -10,6 +10,9 @@ export class Message {
 
     @prop()
     public contents!: string;
+
+    @prop()
+    public unread!: boolean;
 }
 
 const MessageModel = getModelForClass(Message);

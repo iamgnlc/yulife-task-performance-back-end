@@ -3,7 +3,7 @@ import Message from "./message.type";
 import User from "../user/user.type";
 import Context from "../../context";
 import { random } from "../../../utils/math";
-const randomSentence = require("random-sentence");
+// const randomSentence = require("random-sentence");
 
 @Resolver(Message)
 export default class MessageResolver {
@@ -26,6 +26,7 @@ export default class MessageResolver {
         return {
             id: user.id,
             name: user.name,
+            email: user.email,
             unreadMessageCount: undefined,
             inbox: undefined,
         };
@@ -42,15 +43,16 @@ export default class MessageResolver {
 
         const user = await database.UserModel.findById(from);
 
-        console.log(`User found!`, user);
-
         if (!user) {
             return null;
         }
 
+        // console.log(`User found!`, user);
+
         return {
             id: user.id,
             name: user.name,
+            email: user.email,
             unreadMessageCount: undefined,
             inbox: undefined,
         };
@@ -66,21 +68,54 @@ export default class MessageResolver {
         }
 
         const count = await database.UserModel.countDocuments({});
+
+        // If no users in DB throw.
+        if (count === 0) {
+            throw new Error(`No users found.`);
+        }
+
+        const skip = random(0, count - 1);
+
         const to = await database.UserModel.findOne({ _id: { $ne: userId } })
-            .skip(random(0, count))
+            .skip(skip)
             .select("_id");
+
+        if (!to) {
+            throw new Error(`Destination user not found.`);
+        }
 
         const record = await database.MessageModel.create({
             from: userId,
-            to: to?._id,
+            to: to._id,
             contents: message,
+            unread: true,
         });
 
         return {
             id: record.id,
             contents: message,
-            to: to?._id,
+            to: to._id,
             from: userId as any,
         };
+    }
+
+    @Mutation(type => String)
+    async markAsRead(@Ctx() { database, userId }: Context, @Arg("messageId") messageId: string): Promise<string> {
+        if (!userId) {
+            throw new Error(`Not authenticated`);
+        }
+
+        const filter = { _id: { $eq: messageId } };
+        const update = { unread: false };
+
+        let message = await await database.MessageModel.findOneAndUpdate(filter, update, {
+            new: true,
+        });
+
+        if (!message) {
+            throw new Error(`Message not found.`);
+        }
+
+        return message._id;
     }
 }

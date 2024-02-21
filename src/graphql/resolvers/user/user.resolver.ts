@@ -25,6 +25,7 @@ export default class UserResolver {
         return {
             id: user._id,
             name: user.name,
+            email: user.email,
             inbox: undefined,
             unreadMessageCount: undefined,
         };
@@ -43,6 +44,7 @@ export default class UserResolver {
             contents: message.contents,
             to: message.to as any,
             from: message.from as any,
+            unread: message.unread,
         }));
     }
 
@@ -55,8 +57,8 @@ export default class UserResolver {
         @Ctx() { database, userId }: Context,
     ): Promise<User["unreadMessageCount"]> {
         // do a count on the DB for messages count
-        const count = await database.MessageModel.find({ to: userId });
-        return count.length;
+        const count = await database.MessageModel.countDocuments({ to: userId, unread: true }); // Perform count in DB.
+        return count;
     }
 
     /**
@@ -67,7 +69,7 @@ export default class UserResolver {
         const record = await database.UserModel.findOne({ email });
 
         if (!record) {
-            throw new Error(`Incorrect password`);
+            throw new Error(`Incorrect credentials`); // Generic error message to avoid an attacker identify a registered email.
         }
 
         const correct = await bcrypt.compare(password, record.password);
@@ -76,6 +78,9 @@ export default class UserResolver {
             throw new Error(`Invalid credentials`);
         }
 
+        // Both if conditions can potentially be combined into one.
+
+        // Isn't 1 year too long for validity of the JWT?
         return jwt.sign({ userId: record._id }, config.auth.secret, { expiresIn: "1y" });
     }
 
@@ -83,20 +88,39 @@ export default class UserResolver {
      * Register new user
      */
     @Mutation(returns => String)
-    async register(@Arg("email") email: string, @Arg("password") password: string, @Ctx() { database }: Context) {
-        const existing = await database.UserModel.findOne({ email });
+    // async register(@Arg("email") email: string, @Arg("password") password: string, @Ctx() { database }: Context) {
+    //     const existing = await database.UserModel.exists({ email }); // Use exists is more efficiwent. Only check for existence without returning.
 
-        if (existing) {
-            throw new Error(`User exists!`);
-        }
+    //     if (existing) {
+    //         throw new Error(`User exists!`); // This error could be replaced with a more generic one to avoid telling a possible attacker email exists in DB.
+    //     }
 
-        const salt = await bcrypt.genSalt(10);
-        const hash = await bcrypt.hash(password, salt);
-        const user = await database.UserModel.create({
-            email,
-            password: hash,
-        });
+    //     const salt = await bcrypt.genSalt(10);
+    //     const hash = await bcrypt.hash(password, salt);
+    //     const user = await database.UserModel.create({
+    //         email,
+    //         password: hash,
+    //     });
 
-        return jwt.sign({ userId: user._id }, config.auth.secret, { expiresIn: "1y" });
+    //     // Isn't 1 year too long for validity of the JWT?
+    //     return jwt.sign({ userId: user._id }, config.auth.secret, { expiresIn: "1y" });
+    // }
+
+    // Alternatively this function could be rerfactored avoiding async/await.
+    // This type of refactor could be applied somewhere else as well.
+    register(@Arg("email") email: string, @Arg("password") password: string, @Ctx() { database }: Context) {
+        return database.UserModel.exists({ email })
+            .then(existing => {
+                if (existing) {
+                    throw new Error(`User exists!`); // This error could be replaced with a more generic one to avoid telling a possible attacker email exists in DB.
+                }
+                return bcrypt.genSalt(10);
+            })
+            .then(salt => bcrypt.hash(password, salt))
+            .then(hash => database.UserModel.create({ email, password: hash }))
+            .then(user => jwt.sign({ userId: user._id }, config.auth.secret, { expiresIn: "1y" }))
+            .catch(error => {
+                throw error;
+            });
     }
 }

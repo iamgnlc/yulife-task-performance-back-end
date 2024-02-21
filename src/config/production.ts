@@ -5,11 +5,11 @@ const config: Config = {
         uri: "mongodb://localhost/yulife-performance",
     },
     auth: {
-        secret: "sfdgr8rqw734r734je!ejw47dwer£",
+        secret: String(process.env.AUTH_SECRET),
     },
     frontend: {
         selfUrl: "https://someapp.yulife.com/app",
-    }
-}
+    },
+};
 
 export default config;

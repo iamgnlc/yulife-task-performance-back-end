@@ -14,6 +14,9 @@ class Message {
 
     @Field()
     to?: User;
+
+    @Field()
+    unread?: Boolean;
 }
 
 export default Message;

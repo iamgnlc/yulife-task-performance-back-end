@@ -10,6 +10,9 @@ class User {
     name?: string;
 
     @Field()
+    email?: string;
+
+    @Field()
     unreadMessageCount?: number;
 
     @Field(type => [Message])

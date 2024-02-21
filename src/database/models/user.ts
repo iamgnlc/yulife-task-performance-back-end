@@ -1,5 +1,5 @@
-import { prop, getModelForClass, Ref } from '@typegoose/typegoose';
-import { Message } from "./message";
+import { prop, getModelForClass, Ref } from "@typegoose/typegoose";
+// import { Message } from "./message";
 
 export class User {
     @prop()

@@ -121,7 +121,6 @@ function sendMessage(requestParams, context, ee, next) {
     return next();
 }
 
-
 function login(requestParams, context, ee, next) {
     const variables = Object.assign({}, requestParams.json);
 
@@ -137,7 +136,7 @@ function login(requestParams, context, ee, next) {
 }
 
 function storeToken(requestParams, response, context, ee, next) {
-    if (response.body.data && response.body.data.login) {
+    if (response.body && response.body.data && response.body.data.login) {
         context.vars["AUTH_TOKEN"] = response.body.data.login;
     }
 
