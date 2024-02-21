@@ -47,7 +47,7 @@ const init = async () => {
     server.applyMiddleware({ app, path });
 
     app.listen(NODE_PORT, () => {
-        // Moving log into a callbadxck ensures that these are printed only after the server has successfully started listening.
+        // Moving log into a callback ensures that these are printed only after the server has successfully started listening.
         console.log(`App listening on port ${NODE_PORT}!`);
         console.log(`Env: ${process.env.NODE_ENV?.toUpperCase()}`);
     });

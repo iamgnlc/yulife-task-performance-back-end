@@ -6,7 +6,7 @@
 - Changed port as 5000 was in use locally.
 - Fixed artillery index.js.
 - Moved types deps into devDependencies to reduce bundel size.
-- Using `"instances": "MAX",` in PM2 condfiguration will spawn an app process for each available core.
+- Using `"instances": "MAX",` in PM2 condiguration will spawn an app process for each available core.
 
 ## Recommendations
 
